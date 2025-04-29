@@ -4,6 +4,7 @@ import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import DashboardLayout from "@/components/dashboard-layout"
 import ShipmentCard from "@/components/shipment-card"
+import AIAssistant from "@/components/ai-assistant"
 
 export default function Dashboard() {
   // Sample shipment data
@@ -51,6 +52,20 @@ export default function Dashboard() {
       containers: ["CONT-98765", "CONT-98766", "CONT-98767"],
     },
   ]
+
+  // Sample shipment context for AI assistant
+  const shipmentContext = `
+    Current shipments:
+    - SHP-001: Electronics Shipment from Tech Supplies Ltd., $45,000, In Progress
+    - SHP-002: Clothing Merchandise from Fashion Exports Inc., $32,000, Almost Complete
+    - SHP-003: Home Goods from Home Essentials Co., $28,500, Completed
+    
+    Recent activities:
+    - Cargo loading completed for SHP-001
+    - Import documentation in progress for SHP-001
+    - Delivery started for SHP-002
+    - All processes completed for SHP-003
+  `
 
   return (
     <DashboardLayout>
@@ -147,6 +162,9 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
+
+      {/* AI Assistant */}
+      <AIAssistant shipmentContext={shipmentContext} />
     </DashboardLayout>
   )
 }
