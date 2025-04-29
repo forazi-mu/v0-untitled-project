@@ -1,3 +1,4 @@
+"use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search } from "lucide-react"
@@ -5,8 +6,11 @@ import { Input } from "@/components/ui/input"
 import DashboardLayout from "@/components/dashboard-layout"
 import ShipmentCard from "@/components/shipment-card"
 import AIAssistant from "@/components/ai-assistant"
+import { usePreferences } from "@/contexts/preferences-context"
 
 export default function Dashboard() {
+  const { preferences } = usePreferences()
+
   // Sample shipment data
   const shipments = [
     {
@@ -67,9 +71,33 @@ export default function Dashboard() {
     - All processes completed for SHP-003
   `
 
+  // Get layout class based on preferences
+  const getLayoutClass = () => {
+    switch (preferences.layout) {
+      case "compact":
+        return "gap-3"
+      case "spacious":
+        return "gap-8"
+      default:
+        return "gap-6" // comfortable
+    }
+  }
+
+  // Get card size class based on preferences
+  const getCardSizeClass = () => {
+    switch (preferences.cardSize) {
+      case "small":
+        return "grid-cols-1 md:grid-cols-3 lg:grid-cols-4"
+      case "large":
+        return "grid-cols-1 md:grid-cols-1 lg:grid-cols-2"
+      default:
+        return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" // medium
+    }
+  }
+
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6">
+      <div className={`flex flex-col ${getLayoutClass()}`}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <div className="relative w-full sm:w-64">
@@ -78,7 +106,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs defaultValue={preferences.defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="all">All Shipments</TabsTrigger>
             <TabsTrigger value="active">Active</TabsTrigger>
@@ -86,14 +114,14 @@ export default function Dashboard() {
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid ${getCardSizeClass()} ${getLayoutClass()}`}>
               {shipments.map((shipment) => (
                 <ShipmentCard key={shipment.id} shipment={shipment} />
               ))}
             </div>
           </TabsContent>
           <TabsContent value="active">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid ${getCardSizeClass()} ${getLayoutClass()}`}>
               {shipments
                 .filter(
                   (s) => Object.values(s.status).some((v) => v < 100) && Object.values(s.status).some((v) => v > 0),
@@ -104,7 +132,7 @@ export default function Dashboard() {
             </div>
           </TabsContent>
           <TabsContent value="pending">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid ${getCardSizeClass()} ${getLayoutClass()}`}>
               {shipments
                 .filter((s) => Object.values(s.status).some((v) => v === 0))
                 .map((shipment) => (
@@ -113,7 +141,7 @@ export default function Dashboard() {
             </div>
           </TabsContent>
           <TabsContent value="completed">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid ${getCardSizeClass()} ${getLayoutClass()}`}>
               {shipments
                 .filter((s) => Object.values(s.status).every((v) => v === 100))
                 .map((shipment) => (
@@ -123,44 +151,79 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {preferences.visibleWidgets.includes("stats") && (
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${getLayoutClass()}`}>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">24</div>
+                <p className="text-xs text-muted-foreground">+2 from last month</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Active Shipments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">12</div>
+                <p className="text-xs text-muted-foreground">-1 from last month</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">5</div>
+                <p className="text-xs text-muted-foreground">+3 from last month</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">$245,000</div>
+                <p className="text-xs text-muted-foreground">+12% from last month</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Conditionally render other widgets based on preferences */}
+        {preferences.visibleWidgets.includes("activity") && (
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">24</div>
-              <p className="text-xs text-muted-foreground">+2 from last month</p>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="rounded-full bg-blue-100 p-2">
+                    <Search className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">New shipment created</p>
+                    <p className="text-sm text-muted-foreground">SHP-004 was created by John Doe</p>
+                    <p className="text-xs text-muted-foreground">2 hours ago</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="rounded-full bg-green-100 p-2">
+                    <Search className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Document uploaded</p>
+                    <p className="text-sm text-muted-foreground">Invoice #12345 was uploaded to SHP-001</p>
+                    <p className="text-xs text-muted-foreground">5 hours ago</p>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Shipments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">-1 from last month</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">5</div>
-              <p className="text-xs text-muted-foreground">+3 from last month</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$245,000</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
-            </CardContent>
-          </Card>
-        </div>
+        )}
       </div>
 
       {/* AI Assistant */}

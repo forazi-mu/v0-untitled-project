@@ -18,6 +18,7 @@ import {
   User,
   MessageSquare,
   HelpCircle,
+  Palette,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,6 +46,7 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
 } from "@/components/ui/sidebar"
+import { usePreferences } from "@/contexts/preferences-context"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -54,6 +56,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, isAdmin = false }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { preferences } = usePreferences()
 
   const navigation = [
     {
@@ -108,7 +111,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
   const fullNavigation = isAdmin ? [...navigation, ...adminNavigation] : navigation
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!preferences.sidebarCollapsed}>
       <div className="flex h-screen bg-gray-100">
         {/* Sidebar for desktop */}
         <Sidebar>
@@ -133,6 +136,22 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={pathname === "/profile"}>
+                      <Link href="/profile">
+                        <User className="h-5 w-5" />
+                        <span>Profile</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/profile?tab=preferences">
+                        <Palette className="h-5 w-5" />
+                        <span>Preferences</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -234,9 +253,11 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile?tab=preferences">
+                        <Palette className="mr-2 h-4 w-4" />
+                        <span>Preferences</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>

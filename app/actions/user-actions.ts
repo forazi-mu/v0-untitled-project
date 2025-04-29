@@ -4,6 +4,7 @@ import { sql } from "@/lib/db"
 import { getSupabaseServerClient } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 import type { UserProfileFormData } from "@/types/user"
+import type { DashboardPreferences } from "@/contexts/preferences-context"
 
 // Get user profile by user ID
 export async function getUserProfile(userId: string) {
@@ -122,5 +123,58 @@ export async function getCurrentUser() {
   } catch (error) {
     console.error("Error getting current user:", error)
     return { user: null, profile: null }
+  }
+}
+
+// Get user preferences
+export async function getUserPreferences(userId: string) {
+  try {
+    const result = await sql`
+      SELECT preferences FROM user_profiles WHERE user_id = ${userId}
+    `
+
+    if (result.length === 0) {
+      return { success: true, preferences: null }
+    }
+
+    return { success: true, preferences: result[0].preferences }
+  } catch (error) {
+    console.error("Error fetching user preferences:", error)
+    return { success: false, error: "Failed to fetch user preferences" }
+  }
+}
+
+// Update user preferences
+export async function updateUserPreferences(userId: string, preferences: DashboardPreferences) {
+  try {
+    // Check if profile exists
+    const { profile } = await getUserProfile(userId)
+
+    if (profile) {
+      // Update existing profile
+      await sql`
+        UPDATE user_profiles
+        SET preferences = ${JSON.stringify(preferences)}
+        WHERE user_id = ${userId}
+      `
+    } else {
+      // Create new profile with preferences
+      await sql`
+        INSERT INTO user_profiles (
+          user_id,
+          preferences
+        ) VALUES (
+          ${userId},
+          ${JSON.stringify(preferences)}
+        )
+      `
+    }
+
+    revalidatePath("/dashboard")
+    revalidatePath("/profile")
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating user preferences:", error)
+    return { success: false, error: "Failed to update user preferences" }
   }
 }
