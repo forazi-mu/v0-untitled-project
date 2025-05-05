@@ -136,6 +136,14 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>User</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={pathname === "/profile"}>
                       <Link href="/profile">
@@ -145,7 +153,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild isActive={pathname === "/profile" && pathname.includes("preferences")}>
                       <Link href="/profile?tab=preferences">
                         <Palette className="h-5 w-5" />
                         <span>Preferences</span>
@@ -177,9 +185,11 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
                       <span>Profile</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile?tab=preferences">
+                      <Palette className="mr-2 h-4 w-4" />
+                      <span>Preferences</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
@@ -259,6 +269,14 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
                         <span>Preferences</span>
                       </Link>
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/users">
+                          <Users className="mr-2 h-4 w-4" />
+                          <span>User Management</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
                       <LogOut className="mr-2 h-4 w-4" />
